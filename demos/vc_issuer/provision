@@ -115,7 +115,7 @@ echo "Using II canister: $II_CANISTER_ID" >&2
 echo "Using issuer derivation origin: $ISSUER_DERIVATION_ORIGIN" >&2
 echo "Using issuer frontend_hostname: $ISSUER_FRONTEND_HOSTNAME" >&2
 
-declare -a WALLET_ARG=( )
+declare -a WALLET_ARG=(--wallet "$(dfx identity get-wallet)")
 
 if [ "$WALLET" ]
 then

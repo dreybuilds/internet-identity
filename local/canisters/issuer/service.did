@@ -1,0 +1,83 @@
+type ArgumentValue = variant { Int : int32; String : text };
+type CredentialSpec = record {
+  arguments : opt vec record { text; ArgumentValue };
+  credential_type : text;
+};
+type DerivationOriginData = record { origin : text };
+type DerivationOriginError = variant {
+  Internal : text;
+  UnsupportedOrigin : text;
+};
+type DerivationOriginRequest = record { frontend_hostname : text };
+type GetCredentialRequest = record {
+  signed_id_alias : SignedIdAlias;
+  prepared_context : opt blob;
+  credential_spec : CredentialSpec;
+};
+type HeaderField = record { text; text };
+type HttpRequest = record {
+  url : text;
+  method : text;
+  body : blob;
+  headers : vec HeaderField;
+  certificate_version : opt nat16;
+};
+type HttpResponse = record {
+  body : blob;
+  headers : vec HeaderField;
+  status_code : nat16;
+};
+type Icrc21ConsentInfo = record { consent_message : text; language : text };
+type Icrc21ConsentPreferences = record { language : text };
+type Icrc21Error = variant {
+  GenericError : record { description : text; error_code : nat };
+  UnsupportedCanisterCall : Icrc21ErrorInfo;
+  ConsentMessageUnavailable : Icrc21ErrorInfo;
+};
+type Icrc21ErrorInfo = record { description : text };
+type Icrc21VcConsentMessageRequest = record {
+  preferences : Icrc21ConsentPreferences;
+  credential_spec : CredentialSpec;
+};
+type IssueCredentialError = variant {
+  Internal : text;
+  SignatureNotFound : text;
+  InvalidIdAlias : text;
+  UnauthorizedSubject : text;
+  UnknownSubject : text;
+  UnsupportedCredentialSpec : text;
+};
+type IssuedCredentialData = record { vc_jws : text };
+type IssuerConfig = record {
+  derivation_origin : text;
+  idp_canister_ids : vec principal;
+  ic_root_key_der : opt blob;
+  frontend_hostname : text;
+};
+type PrepareCredentialRequest = record {
+  signed_id_alias : SignedIdAlias;
+  credential_spec : CredentialSpec;
+};
+type PreparedCredentialData = record { prepared_context : opt blob };
+type SignedIdAlias = record { credential_jws : text };
+service : {
+  add_adult : (principal) -> (text);
+  add_employee : (principal) -> (text);
+  add_graduate : (principal) -> (text);
+  configure : (IssuerConfig) -> ();
+  derivation_origin : (DerivationOriginRequest) -> (
+      variant { Ok : DerivationOriginData; Err : DerivationOriginError },
+    );
+  get_credential : (GetCredentialRequest) -> (
+      variant { Ok : IssuedCredentialData; Err : IssueCredentialError },
+    ) query;
+  http_request : (HttpRequest) -> (HttpResponse) query;
+  prepare_credential : (PrepareCredentialRequest) -> (
+      variant { Ok : PreparedCredentialData; Err : IssueCredentialError },
+    );
+  set_alternative_origins : (text) -> ();
+  set_derivation_origin : (text, text) -> ();
+  vc_consent_message : (Icrc21VcConsentMessageRequest) -> (
+      variant { Ok : Icrc21ConsentInfo; Err : Icrc21Error },
+    );
+}
